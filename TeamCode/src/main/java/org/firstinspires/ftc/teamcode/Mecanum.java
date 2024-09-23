@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Mecanum {
@@ -36,7 +37,7 @@ public class Mecanum {
         imu.initialize(parameters);
     }
 
-    private void teleop(Gamepad gamepad1, boolean mode) {
+    public void teleop(Gamepad gamepad1, boolean mode) {
         double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
         double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
         double rx = gamepad1.right_stick_x;
@@ -78,6 +79,45 @@ public class Mecanum {
         backLeft1.setPower(backLeft);
         frontRight2.setPower(frontRight);
         backRight3.setPower(backRight);
+    }
+
+    public double[] getPower() {
+        double[] power = new double[4];
+
+        power[0] = frontLeft0.getPower();
+        power[1] = backLeft1.getPower();
+        power[2] = frontRight2.getPower();
+        power[3] = backRight3.getPower();
+
+        return power;
+    }
+
+    public double getLeftDist() {
+        return (frontLeft0.getCurrentPosition()) * Constants.MecanumConstants.ticksToInch;
+    }
+
+    public double getRightDist() {
+        return (frontRight2.getCurrentPosition()) * Constants.MecanumConstants.ticksToInch;
+    }
+
+    public double getAvgDist() {
+        return (getLeftDist() + getRightDist()) / 2;
+    }
+
+    public double getYaw() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+    }
+    public void periodic(Telemetry telemetry) {
+        telemetry.addLine("Drive:");
+        telemetry.addData("Front Left:", getPower()[0]);
+        telemetry.addData("Back Left:", getPower()[1]);
+        telemetry.addData("Front Right:", getPower()[2]);
+        telemetry.addData("Back Right:", getPower()[3]);
+        telemetry.addLine("Position");
+        telemetry.addData("Left:", frontLeft0.getCurrentPosition());
+        telemetry.addData("Right:", frontRight2.getCurrentPosition());
+        telemetry.addData("Distance:", getAvgDist());
+        telemetry.addData("Yaw:", getYaw());
     }
 
     public void resetEncoders() {

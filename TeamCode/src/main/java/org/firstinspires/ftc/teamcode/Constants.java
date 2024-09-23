@@ -20,6 +20,11 @@ public class Constants {
         public static final DcMotor.Direction invertLeft = DcMotor.Direction.REVERSE;
         public static final DcMotor.ZeroPowerBehavior neutralMode = DcMotor.ZeroPowerBehavior.BRAKE;
 
+        public static final double ticksPerRev = 8192;
+        public static final double wheelD = 38 / 25.4; //38mm in inches
+        public static final double gearRatio = 1;
+        public static final double ticksToInch = 1; //(wheelD * PI) / ticksPerRev
+
     }
 
 
