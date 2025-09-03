@@ -33,8 +33,8 @@ public class Mecanum {
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+                RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
         imu.initialize(parameters);
     }
 
@@ -44,7 +44,13 @@ public class Mecanum {
         double rx = gamepad1.right_stick_x;
 
         if (gamepad1.options) {
-            imu.resetYaw();
+            resetGyro();
+        }
+
+        if (mode == true) {
+            x = x /  10;
+            y = y / 10;
+            rx = rx / 10;
         }
 
         drive(y, x, rx, false);
@@ -62,24 +68,29 @@ public class Mecanum {
         if(fieldOriented) {
             double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
+            // Rotate the movement direction counter to the bot's rotation
             rotX = xSpeed * Math.cos(-botHeading) - ySpeed * Math.sin(-botHeading);
-            rotY = xSpeed * Math.cos(-botHeading) + ySpeed * Math.sin(-botHeading);
+            rotY = xSpeed * Math.sin(-botHeading) + ySpeed * Math.cos(-botHeading);
+
+            rotX = rotX * 1.1;  // Counteract imperfect strafing
+
         }
 
-        double denominator = Math.max(Math.abs(ySpeed) + Math.abs(xSpeed) + Math.abs(rot), 1);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
         double frontLeftPower = (rotY + rotX + rot) / denominator;
         double backLeftPower = (rotY - rotX + rot) / denominator;
         double frontRightPower = (rotY - rotX - rot) / denominator;
         double backRightPower = (rotY + rotX - rot) / denominator;
 
+
         setPower(frontLeftPower, backLeftPower, frontRightPower, backRightPower);
     }
 
     public void setPower(double frontLeft, double backLeft, double frontRight, double backRight) {
-        frontLeft0.setPower(frontLeft);
-        backLeft1.setPower(backLeft);
-        frontRight2.setPower(frontRight);
-        backRight3.setPower(backRight);
+        frontLeft0.setPower(frontLeft*2);
+        backLeft1.setPower(backLeft*2);
+        frontRight2.setPower(frontRight*2);
+        backRight3.setPower(backRight*2);
     }
 
     public double[] getPower() {
@@ -127,6 +138,7 @@ public class Mecanum {
         motorConfig(frontRight2);
         motorConfig(backRight3);
     }
+
 
     private DcMotor motorConfig(DcMotor motor) {
         motor.setZeroPowerBehavior(Constants.MecanumConstants.neutralMode);

@@ -25,6 +25,6 @@ public abstract class CommandBase {
         }
 
         return onEnd();
-        
+
     }
 }
